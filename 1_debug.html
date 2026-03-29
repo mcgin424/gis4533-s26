@@ -55,9 +55,10 @@
     </div>
     
     <div id="map" style="width: 600px; height: 400px;"></div>
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script> // moved to before script block
-    <!-- start of our JavaScript code -->
-    <script>
+    
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script> 
+    <!-- start of our JavaScript code --> <!--This block needed to be before the block of code-->
+   <script>
         // Initialize the map
         let map = L.map('map') //The div id= "map" instead of "mapElement", so I changed this to match
         // Center the map on UMD campus, and set the zoom level
