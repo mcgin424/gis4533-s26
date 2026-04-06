@@ -24,37 +24,90 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Most Basic Web Map</title>
+    <title>Duluth Favorites Map</title>
     
     <!-- Leaflet CSS stylesheet -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     
-    <style></style>
+    <style>body {
+            background-color: #c9dbe8;
+            font-family: Arial, sans-serif;
+        }
+
+        .header {
+            text-align: center;
+            padding: 20px;
+        }
+
+        h1 {
+            color: #1a3a50;
+        }
+
+        h3 {
+            color: #3a6a8a;
+        }
+
+        #map {
+            width: 800px;
+            height: 500px;
+            margin: 0 auto;
+            border: 3px solid #1a3a50;
+        }
+
+        .description {
+            width: 800px;
+            margin: 20px auto;
+            font-size: 16px;
+            line-height: 1.6;
+        }</style>
 </head>
 <body>
     <!-- Header at the top of the page -->
     <div class="header">
-        <h1>A Mostly Basic Web Map</h1>
-        <h3>by: Your Name Here</h3>
+        <h1>Favorite Spots in Duluth, MN</h1>
+        <h3>by: David McGinley</h3>
     </div>
     <div id="map" style="width: 600px; height: 400px;"></div>
-    
+    <div class="description">
+        <p>
+            This map highlights three of my favorite spots around <strong>Duluth, Minnesota</strong>,
+            a city perched on the western tip of Lake Superior, one of the largest freshwater lakes on Earth.
+            <strong>Canal Park</strong> is Duluth's iconic waterfront district where you can watch massive
+            ore boats pass just feet away under the Aerial Lift Bridge. <strong>Enger Tower</strong> is a
+            five-story bluestone observation tower on the hillside offering sweeping panoramas of the harbor
+            and Wisconsin's Bayfield Peninsula. <strong>Bentleyville Tour of Lights</strong> transforms
+            Bayfront Festival Park each winter into the largest free walk-through lighting display in the
+            nation, drawing hundreds of thousands of visitors.
+        </p>
+    </div>
     <!-- Leaflet JavaScript library -->
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     
     <script>
         // Initialize the map, center it on UMD campus, and set the zoom level
-        const map = L.map('map').setView([46.82, -92.08], 13);
+        const map = L.map('map').setView([46.783, -92.106], 12);
 
         // Add OpenStreetMap tiles
-        const tiles = L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        const tiles = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
             maxZoom: 19,
-            attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+            attribution: 'Tiles &copy; Esri'
         }).addTo(map);
 
         // Add a marker for the UMD campus
         const marker = L.marker([46.82, -92.085]).addTo(map);
         marker.bindPopup("<b>University of Minnesota Duluth</b><br>A great place to learn about GIS!").openPopup();
+       
+        // Marker 1 - Canal Park
+        const marker1 = L.marker([46.7773, -92.0930]).addTo(map);
+        marker1.bindPopup("<b>Canal Park</b><br>Home of the Aerial Lift Bridge! The bridge lifts over 200 times a day to let giant ore boats through.<br><img src='https://visitduluth.com/wp-content/uploads/2025/07/bridge-view-1024x767.jpg' width='200px'>");
+       
+        // Marker 2 - Enger Tower
+        const marker2 = L.marker([46.7927, -92.1285]).addTo(map);
+        marker2.bindPopup("<b>Enger Tower</b><br>A stone observation tower built in 1939. It sits 670 feet above Lake Superior and has one of the best views in the city!");
+
+        // Marker 3 - Bentleyville
+        const marker3 = L.marker([46.7815, -92.0987]).addTo(map);
+        marker3.bindPopup("<b>Bentleyville Tour of Lights</b><br>The largest free walk-through Christmas lights display in the US! Over 5 million lights every winter at Bayfront Park.");
     </script>
 </body>
 </html>
