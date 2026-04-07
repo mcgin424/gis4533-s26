@@ -47,32 +47,143 @@
     I expect every block of code to have a comment above it describing what it does and how it works. 
 -->
 <!DOCTYPE html>
+
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Most Basic Web Map</title>
-    
-    <!-- Leaflet CSS -->
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-    
-    <style></style>
-</head>
-<body>
-    <div id="map" style="width: 600px; height: 400px;"></div>
-    
-    <!-- Leaflet JavaScript -->
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-    
-    <script>
-        // Initialize the map, center it on UMD campus, and set the zoom level
-        const map = L.map('map').setView([46.82, -92.08], 13);
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-        // Add OpenStreetMap tiles
-        const tiles = L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            maxZoom: 19,
-            attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
-        }).addTo(map);
-    </script>
+<title>Duluth School Attendance Areas</title>
+
+<!-- Leaflet CSS -->
+
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+
+<style>
+
+/* Page styling */
+body {
+font-family: Arial, sans-serif;
+margin: 0;
+padding: 0;
+text-align: center;
+}
+
+/* Title styling */
+h1 {
+margin-top: 10px;
+}
+
+/* Subtitle styling */
+h3 {
+margin-top: 0;
+color: rgb(229, 14, 14);
+}
+
+/* Map styling */
+#map {
+width: 90%;
+height: 600px;
+margin: auto;
+border: 3px solid #010101;
+}
+
+</style>
+
+</head>
+
+<body>
+
+<h1>Duluth School Attendance Areas</h1>
+<h3>Northeastern MN school attendance zones</h3>
+
+<div id="map"></div>
+
+<!-- Leaflet JavaScript -->
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+<script>
+
+// Initialize the map centered on Duluth
+const map = L.map('map').setView([46.8, -92.1], 11);
+
+
+// Add a subdued basemap for thematic mapping
+const tiles = L.tileLayer(
+'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png',
+{
+attribution:
+'&copy; OpenStreetMap contributors &copy; CARTO'
+}
+).addTo(map);
+
+
+// Random color generator function
+// This creates a random hex color for each attendance area
+
+function getRandomColor() {
+const letters = '0123456789ABCDEF';
+let color = '#';
+for (let i = 0; i < 6; i++) {
+color += letters[Math.floor(Math.random() * 16)];
+}
+return color;
+}
+
+
+// Style function for GeoJSON polygons
+// Applies random color and styling
+
+function style(feature) {
+return {
+fillColor: getRandomColor(),
+weight: 2,
+opacity: 1,
+color: 'white',
+dashArray: '3',
+fillOpacity: 0.6
+};
+}
+
+
+// Function to create popup content
+// Displays school name and attendance info
+
+function onEachFeature(feature, layer) {
+
+let popupContent = "<b>Attendance Area</b><br>";
+
+if (feature.properties) {
+
+for (const property in feature.properties) {
+popupContent += property + ": " + feature.properties[property] + "<br>";
+}
+
+}
+
+layer.bindPopup(popupContent);
+}
+
+
+// Load GeoJSON file
+
+fetch('duluth_school_attendance_areas.json')
+.then(response => response.json())
+.then(data => {
+
+// Add GeoJSON to map
+
+L.geoJSON(data, {
+
+style: style,
+onEachFeature: onEachFeature
+
+}).addTo(map);
+
+});
+
+</script>
+
 </body>
 </html>
