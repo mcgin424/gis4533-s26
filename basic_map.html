@@ -1,35 +1,430 @@
-<!-- 
-    The most basic web map you can get using Leaflet.
-    It's a map centered on the University of Minnesota Duluth campus.
-    And it uses OpenStreetMap tiles for the basemap layer.
--->
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Most Basic Web Map</title>
-    
-    <!-- Leaflet CSS -->
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-    
-    <style></style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Discover Duluth | FDI World Dental Congress 2026</title>
+
+  <!-- Load Leaflet  -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+  <!-- Load our fonts from Google Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@900&family=Lato:wght@400;700&display=swap" rel="stylesheet" />
+
+  <style>
+
+    /* Remove default browser spacing */
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    /* Make the page fill the whole screen with no scroll */
+    body {
+      font-family: 'Lato', sans-serif;
+      height: 100vh;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      background: #1b2e44;
+    }
+
+    /* ── TOP HEADER BAR ── */
+    header {
+      background: #0d1b2a;
+      border-bottom: 3px solid #2a6f97;
+      padding: 14px 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-shrink: 0;
+    }
+
+    .site-title {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.4rem;
+      color: #f5f0e8;
+    }
+
+    /* Make "Duluth" gold */
+    .site-title span { color: #e9c46a; }
+
+    .tagline {
+      font-size: 0.75rem;
+      color: #a8dadc;
+      text-align: right;
+    }
+
+    /* ── MAIN AREA: map + side panel side by side ── */
+    .main {
+      display: flex;
+      flex: 1;
+      overflow: hidden;
+    }
+
+    /* The map fills all leftover space */
+    #map {
+      flex: 1;
+      height: 100%;
+    }
+
+    /* ── SIDE PANEL on the right ── */
+    #panel {
+      width: 320px;
+      height: 100%;
+      background: #f5f0e8;
+      border-left: 3px solid #2a6f97;
+      overflow-y: auto;
+      flex-shrink: 0;
+      padding: 28px 22px;
+    }
+
+    /* Welcome message shown before any marker is clicked */
+    #welcome h2 {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.5rem;
+      color: #0d1b2a;
+      margin-bottom: 12px;
+    }
+
+    #welcome p {
+      font-size: 0.875rem;
+      color: #3a4a5c;
+      line-height: 1.7;
+      margin-bottom: 16px;
+    }
+
+    /* ── LEGEND (the color key) ── */
+    .legend-title {
+      font-size: 0.65rem;
+      font-weight: 700;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: #6b7c93;
+      margin-bottom: 10px;
+    }
+
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 0.82rem;
+      color: #1a1a2e;
+      margin-bottom: 8px;
+    }
+
+    /* Small colored circle in the legend */
+    .legend-dot {
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+
+    /* ── DETAIL PANEL shown when a marker is clicked ── */
+    #detail { display: none; } /* hidden by default */
+
+    #detail img {
+      width: 100%;
+      height: 180px;
+      object-fit: cover;       
+      border-radius: 4px;
+      margin-bottom: 14px;
+    }
+
+    #detail h2 {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.3rem;
+      color: #0d1b2a;
+      margin-bottom: 6px;
+    }
+
+    /* Small gray address line */
+    #detail .address {
+      font-size: 0.75rem;
+      color: #6b7c93;
+      margin-bottom: 12px;
+    }
+
+    #detail p {
+      font-size: 0.85rem;
+      color: #3a4a5c;
+      line-height: 1.7;
+      border-left: 3px solid #a8dadc;
+      padding-left: 12px;
+      margin-bottom: 16px;
+    }
+
+    /* "Visit Website" button */
+    #detail a {
+      display: inline-block;
+      background: #0d1b2a;
+      color: #f5f0e8;
+      text-decoration: none;
+      font-size: 0.75rem;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      padding: 9px 16px;
+      border-radius: 3px;
+      margin-bottom: 16px;
+    }
+
+    /* "← Back" link */
+    #back-btn {
+      display: inline-block;
+      font-size: 0.78rem;
+      color: #2a6f97;
+      cursor: pointer;
+      margin-bottom: 16px;
+      font-weight: 700;
+    }
+
+  </style>
 </head>
 <body>
-    <div id="map" style="width: 600px; height: 400px;"></div>
-    
-    <!-- Leaflet JavaScript -->
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-    
-    <script>
-        // Initialize the map, center it on UMD campus, and set the zoom level
-        const map = L.map('map').setView([46.82, -92.08], 13);
 
-        // Add OpenStreetMap tiles
-        const tiles = L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            maxZoom: 19,
-            attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
-        }).addTo(map);
-    </script>
+  <!-- HEADER -->
+  <header>
+    <div class="site-title">Discover <span>Duluth</span></div>
+    <div class="tagline">FDI World Dental Congress 2026<br>Duluth, Minnesota</div>
+  </header>
+
+  <!-- MAIN AREA -->
+  <div class="main">
+
+    <!-- The map goes here — Leaflet fills this div -->
+    <div id="map"></div>
+
+    <!-- SIDE PANEL -->
+    <div id="panel">
+
+      <!-- Welcome message -->
+      <div id="welcome">
+        <h2>Welcome to Duluth!</h2>
+        <p>
+          We're so glad you're here for the 2026 FDI World Dental Congress.
+          Duluth sits on the western tip of Lake Superior.
+        </p>
+        <p>
+          <strong>Click any marker</strong> on the map to learn about that
+          attraction, see a photo, and find a link to its website.
+        </p>
+
+        <!-- Color legend explaining the marker types -->
+        <div class="legend-title">Map Legend</div>
+
+        <div class="legend-item">
+          <div class="legend-dot" style="background:#2a6f97;"></div>
+          Landmark
+        </div>
+        <div class="legend-item">
+          <div class="legend-dot" style="background:#2d6a4f;"></div>
+          Nature &amp; Parks
+        </div>
+        <div class="legend-item">
+          <div class="legend-dot" style="background:#7b3f00;"></div>
+          Museum &amp; History
+        </div>
+        <div class="legend-item">
+          <div class="legend-dot" style="background:#b5242a;"></div>
+          Recreation &amp; Arts
+        </div>
+      </div>
+
+      <!-- Detail panel (hidden until a marker is clicked) -->
+      <div id="detail">
+        <div id="back-btn" onclick="showWelcome()">← Back to list</div>
+        <img id="detail-img" src="" alt="" />
+        <h2 id="detail-name"></h2>
+        <div class="address" id="detail-address"></div>
+        <p id="detail-desc"></p>
+        <a id="detail-link" href="#" target="_blank">Visit Website ↗</a>
+      </div>
+
+    </div>
+  </div>
+
+
+  <script>
+
+    /* OUR ATTRACTION DATA */
+    const attractions = [
+      {
+        name: "Canal Park",
+        address: "Canal Park, Duluth, MN 55802",
+        lat: 46.7794, lng: -92.0907,
+        website: "https://www.visitduluth.com/canal-park/",
+        desc: "Duluth's most beloved neighborhood, right where the St. Louis River meets Lake Superior. Watch massive ore ships pass through the ship canal, browse shops, and enjoy views of the famous Aerial Lift Bridge.",
+        photo: "https://external-content.duckduckgo.com/iu/?u=https%3A%2F%2Fwikitravel.org%2Fupload%2Fshared%2Fd%2Fd5%2FCanal_Park.jpg&f=1&nofb=1&ipt=ffcb1b11b53d56e374e7dad954cea70f9fa22fda1372be3420292a745037c03b",
+        category: "landmark"
+      },
+      {
+        name: "Aerial Lift Bridge",
+        address: "601 S Lake Ave, Duluth, MN 55802",
+        lat: 46.7801, lng: -92.0927,
+        website: "https://www.goduluthmn.com/best-duluth-attractions/aerial-lift-bridge/",
+        desc: "Duluth's most iconic landmark. Originally built in 1905, this vertical lift bridge still rises dozens of times daily to let ships into the harbor. A must-see!",
+        photo: "https://images.fineartamerica.com/images-medium-large-5/sailing-through-the-duluth-aerial-lift-bridge-shutter-happens-photography.jpg",
+        category: "landmark"
+      },
+      {
+        name: "Glensheen Historic Estate",
+        address: "3300 London Rd, Duluth, MN 55804",
+        lat: 46.8139, lng: -92.0514,
+        website: "https://glensheen.org/",
+        desc: "A stunning 39-room mansion on the shores of Lake Superior, built in 1908. Now a museum run by UMD, it offers tours of its lavishly preserved rooms and beautiful gardens.",
+        photo: "https://th.bing.com/th/id/OIP.l8fNPoiaK8c4reKOlyzTMQHaE8?w=276&h=184&c=7&r=0&o=7&pid=1.7&rm=3",
+        category: "museum"
+      },
+      {
+        name: "Great Lakes Aquarium",
+        address: "353 Harbor Dr, Duluth, MN 55802",
+        lat: 46.7831, lng: -92.0973,
+        website: "https://glaquarium.org/",
+        desc: "The only all-freshwater aquarium in the United States. Home to lake sturgeon, river otters, and hundreds of species native to Lake Superior. Great for all ages.",
+        photo: "https://mommybunch.com/wp-content/uploads/2016/07/great-lakes-aquarium-tank.jpg",
+        category: "museum"
+      },
+      {
+        name: "Spirit Mountain",
+        address: "9500 Spirit Mountain Pl, Duluth, MN 55810",
+        lat: 46.7195, lng: -92.2197,
+        website: "https://www.spiritmt.com/",
+        desc: "Duluth's year-round mountain playground. Ski in winter, mountain bike and ride the alpine slide in summer. Great views of the city from the top.",
+        photo: "https://spiritmt.com/wp-content/uploads/2022/11/makeyourway-skiier.jpg",
+        category: "recreation"
+      },
+      {
+        name: "Jay Cooke State Park",
+        address: "780 MN-210, Carlton, MN 55718",
+        lat: 46.6539, lng: -92.3775,
+        website: "https://www.dnr.state.mn.us/state_parks/park.html?id=spk00187",
+        desc: "About 10 miles from Duluth, Jay Cooke protects a dramatic river gorge. Walk the swinging bridge over rocky rapids, hike forest trails, and watch for eagles and otters.",
+        photo: "https://mntrips.com/wp-content/uploads/2020/09/jay-cooke-state-park-st-louis-river-rocks-1.jpg",
+        category: "nature"
+      },
+      {
+        name: "North Shore Scenic Railroad",
+        address: "506 W Michigan St, Duluth, MN 55802",
+        lat: 46.7855, lng: -92.1038,
+        website: "http://www.northshorescenicrailroad.org/",
+        desc: "Hop aboard a vintage train for a narrated ride along the Lake Superior shoreline. Seasonal trips range from short harbor tours to full-day North Shore excursions.",
+        photo: "https://lh3.googleusercontent.com/-jum53AdNMgY/Ugak0f_WT9I/AAAAAAAAAKY/TziGLVO3oZAdMJqJshEFJPYISPMwb93-gCLIBGAYYCw/w100-h134-n-k-no/",
+        category: "landmark"
+      },
+      {
+        name: "Enger Park & Tower",
+        address: "1601 Enger Tower Dr, Duluth, MN 55806",
+        lat: 46.7722, lng: -92.1272,
+        website: "https://duluthmn.gov/parks/parks-listing/enger-park/",
+        desc: "A hilltop park with sweeping views of Duluth, the harbor, and Wisconsin. Climb the five-story stone observation tower for a breathtaking 360° view of the region.",
+        photo: "https://duluthmn.gov/media/7102/engerpark2012toweratnight_267x178.jpg",
+        category: "nature"
+      },
+      {
+        name: "S.S. William A. Irvin",
+        address: "350 Harbor Dr, Duluth, MN 55802",
+        lat: 46.7826, lng: -92.0961,
+        website: "https://decc.org/william-a-irvin/",
+        desc: "Tour a retired 610-foot Great Lakes ore freighter docked right in the harbor. Explore the engine room, cargo holds, and the elegant guest quarters once used by company executives.",
+        photo: "https://www.museumships.us/images/merchant-marine/william-a-irvin/William_A._Irvin.jpg",
+        category: "museum"
+      },
+      {
+        name: "Lake Superior Art Glass",
+        address: "357 Canal Park Dr, Duluth, MN 55802",
+        lat: 46.7793, lng: -92.0897,
+        website: "https://lakesuperiorartglass.com/",
+        desc: "Minnesota's premier glass art gallery and studio in the heart of Canal Park. Browse handmade glass art or sign up for a glassblowing class to take home a unique Duluth souvenir.",
+        photo: "https://dynamic-media-cdn.tripadvisor.com/media/photo-o/16/dd/e1/79/you-can-t-miss-us-just.jpg?w=700&h=400&s=1",
+        category: "recreation"
+      },
+      {
+        name: "Hawk Ridge Bird Observatory",
+        address: "3980 E Skyline Pkwy, Duluth, MN 55804",
+        lat: 46.8447, lng: -92.0197,
+        website: "https://hawkridge.org/",
+        desc: "One of the best raptor migration sites in North America. Each fall, thousands of eagles, hawks, and falcons funnel over this ridge. During banding sessions, visitors can hold a hawk!",
+        photo: "https://th.bing.com/th/id/OIP.IdIUiwnq72tGsGFDnW1sqAHaE9?w=244&h=180&c=7&r=0&o=7&pid=1.7&rm=3",
+        category: "nature"
+      },
+      {
+        name: "Duluth Art Institute",
+        address: "506 W Michigan St, Duluth, MN 55802",
+        lat: 46.7858, lng: -92.1044,
+        website: "https://duluthartinstitute.org/",
+        desc: "Founded in 1930, the Duluth Art Institute hosts rotating exhibitions and workshops inside the beautiful historic Depot — a stunning Romanesque Revival train station in the heart of downtown.",
+        photo: "https://th.bing.com/th/id/OIP.L4_QEKrzxWYm4QDix_bXMAHaE8?w=290&h=194&c=7&r=0&o=7&pid=1.7&rm=3",
+        category: "recreation"
+      }
+    ];
+
+    /* MARKER COLORS
+      Each category maps to a color.  */
+    const categoryColors = {
+      landmark:   "#2a6f97",  // blue
+      nature:     "#2d6a4f",  // green
+      museum:     "#7b3f00",  // brown
+      recreation: "#b5242a"   // red
+    };
+
+    /*  CREATE THE MAP */
+    const map = L.map('map').setView([46.7867, -92.1005], 13);
+
+    /*   Add a tile layer */
+ L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+  attribution: '© <a href="https://carto.com/">CARTO</a>'
+}).addTo(map);
+    /*ADD MARKERS */
+    attractions.forEach(function(place) {
+
+      // Look up the color for this attraction's category
+      const color = categoryColors[place.category];
+
+      // Create a circle marker at the attraction's coordinates
+      const marker = L.circleMarker([place.lat, place.lng], {
+        radius: 10,           // size of the circle in pixels
+        fillColor: color,     // inside color
+        color: "#ffffff",     // border color (white ring)
+        weight: 2,            // border thickness
+        fillOpacity: 0.9      // how solid the fill is (0=clear, 1=solid)
+      }).addTo(map);
+
+      // Show the attraction name when hovering over the marker
+      marker.bindTooltip(place.name);
+
+      // When the marker is clicked, fill the side panel
+      marker.on('click', function() {
+        showDetail(place);
+      });
+
+    });
+
+    /*SHOW DETAIL PANEL*/
+    function showDetail(place) {
+      // Hide the welcome message
+      document.getElementById('welcome').style.display = 'none';
+
+      // Fill in the detail panel with this attraction's info
+      document.getElementById('detail-img').src = place.photo;
+      document.getElementById('detail-img').alt = place.name;
+      document.getElementById('detail-name').textContent = place.name;
+      document.getElementById('detail-address').textContent = place.address;
+      document.getElementById('detail-desc').textContent = place.desc;
+      document.getElementById('detail-link').href = place.website;
+
+      // Show the detail panel
+      document.getElementById('detail').style.display = 'block';
+
+      // Scroll the panel back to the top
+      document.getElementById('panel').scrollTop = 0;
+    }
+
+    /* SHOW WELCOME PANEL */
+    function showWelcome() {
+      document.getElementById('detail').style.display = 'none';
+      document.getElementById('welcome').style.display = 'block';
+    }
+
+  </script>
 </body>
 </html>
